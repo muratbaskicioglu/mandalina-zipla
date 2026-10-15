@@ -1,0 +1,811 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#7fd3f7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="Mandalina Zıpla: yapraktan yaprağa zıpla, ne kadar yükseğe çıkabilirsin?">
+<meta property="og:title" content="Mandalina Zıpla 🍊">
+<meta property="og:description" content="Yapraktan yaprağa zıpla, kuşlardan kaç. Ne kadar yükseğe çıkabilirsin?">
+<title>Mandalina Zıpla</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8D%8A%3C/text%3E%3C/svg%3E">
+<style>
+  :root { --org: #ff8a1c; --org-d: #c95c00; --ink: #2a1a10; --f: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0d2236; }
+  body {
+    font-family: var(--f);
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent; overscroll-behavior: none; touch-action: none;
+  }
+  #wrap { position: fixed; top: 0; bottom: 0; left: 50%; width: 100%; max-width: 480px; transform: translateX(-50%); overflow: hidden; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+  .pill {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    background: rgba(0, 0, 0, .45); color: #fff; border-radius: 999px;
+    padding: 4px 16px; font: 800 20px/1.3 var(--f); font-variant-numeric: tabular-nums;
+    pointer-events: none; white-space: nowrap;
+  }
+  .icon {
+    position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px);
+    width: 42px; height: 42px; border-radius: 50%; border: 0; font-size: 19px; line-height: 42px; padding: 0;
+    background: rgba(0, 0, 0, .35); color: #fff; cursor: pointer;
+  }
+  #mute { right: 10px; }
+  #pauseBtn { left: 10px; }
+
+  .overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+    padding: calc(env(safe-area-inset-top, 0px) + 28px) 20px calc(env(safe-area-inset-bottom, 0px) + 28px);
+    text-align: center; color: var(--ink);
+  }
+  .hidden { display: none !important; }
+  #menu { justify-content: space-between; }
+  .titlebox { margin-top: 30px; background: rgba(255, 255, 255, .78); border-radius: 24px; padding: 6px 18px 14px; box-shadow: 0 6px 20px rgba(0, 40, 80, .12); }
+  .logo {
+    margin: 18px 0 0; font: 900 44px/1 var(--f); color: var(--org); letter-spacing: -.5px;
+    -webkit-text-stroke: 2px #7a3500; paint-order: stroke fill; text-shadow: 0 4px 0 #7a3500;
+  }
+  .logo span { display: block; font-size: 52px; }
+  .sub { margin: 10px auto 0; font: 600 16px/1.4 var(--f); color: #234; max-width: 300px; }
+  .bottom { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+  .hint { display: flex; gap: 8px; justify-content: center; font: 700 13px/1.3 var(--f); color: #fff; }
+  .hint b { background: rgba(0, 0, 0, .4); border-radius: 10px; padding: 6px 10px; }
+  .best { font: 700 15px var(--f); color: #234; min-height: 20px; }
+  button.big {
+    font: 900 22px/1 var(--f); padding: 18px 36px; min-width: 230px; border-radius: 999px; border: 0;
+    background: var(--org); color: #fff; box-shadow: 0 6px 0 var(--org-d); cursor: pointer;
+  }
+  button.big:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--org-d); }
+  button.ghost {
+    font: 800 18px/1 var(--f); padding: 14px 30px; min-width: 230px; border-radius: 999px;
+    border: 3px solid #fff; background: rgba(255, 255, 255, .15); color: #fff; cursor: pointer;
+  }
+
+  #over, #pause { justify-content: center; gap: 14px; background: rgba(10, 20, 40, .55); color: #fff; }
+  #pause h2 { margin: 0 0 6px; font: 900 30px var(--f); }
+  .card {
+    background: #fff; color: var(--ink); border-radius: 24px; padding: 22px 26px 20px; width: min(320px, 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
+  }
+  .card h2 { margin: 0; font: 900 26px/1.2 var(--f); color: var(--org-d); }
+  .card .num { margin: 10px 0 0; font: 900 52px/1 var(--f); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .card .unit { font: 700 14px var(--f); color: #6a5a50; }
+  .card .rec { margin-top: 10px; font: 700 15px var(--f); color: #555; }
+  .badge { display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 999px; background: #ffe066; color: #6b4a00; font: 800 14px var(--f); }
+
+  #toast {
+    position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); transform: translateX(-50%);
+    background: rgba(0, 0, 0, .8); color: #fff; padding: 10px 16px; border-radius: 12px;
+    font: 600 14px/1.4 var(--f); max-width: calc(100% - 32px); text-align: center; pointer-events: none;
+  }
+  #rotate { display: none; }
+  @media (orientation: landscape) and (max-height: 500px) and (pointer: coarse) {
+    #rotate { display: flex; justify-content: center; background: #ff8a1c; color: #fff; font: 800 22px var(--f); z-index: 9; }
+  }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" aria-label="Mandalina Zıpla oyun alanı"></canvas>
+  <div id="score" class="pill hidden">0 m</div>
+  <button id="pauseBtn" class="icon hidden" aria-label="Duraklat">⏸</button>
+  <button id="mute" class="icon" aria-label="Sesi kapat/aç">🔊</button>
+
+  <div id="menu" class="overlay">
+    <div class="titlebox">
+      <h1 class="logo">Mandalina<span>Zıpla!</span></h1>
+      <p class="sub">Yapraktan yaprağa zıpla, kuşlardan kaç. Ne kadar yükseğe çıkabilirsin?</p>
+    </div>
+    <div class="bottom">
+      <div class="hint"><b>◀ Sola: sol yarıya bas</b><b>Sağa: sağ yarıya bas ▶</b></div>
+      <button id="start" class="big">Başla</button>
+      <div class="best" id="menuBest"></div>
+    </div>
+  </div>
+
+  <div id="pause" class="overlay hidden">
+    <h2>Mola 🍊</h2>
+    <button id="resume" class="big">Devam</button>
+  </div>
+
+  <div id="over" class="overlay hidden">
+    <div class="card">
+      <h2 id="overTitle">Hoppala, düştün!</h2>
+      <div class="num" id="overScore">0</div>
+      <div class="unit">metre tırmandın</div>
+      <div id="newRec" class="badge hidden">🎉 Yeni rekor!</div>
+      <div class="rec" id="overBest"></div>
+    </div>
+    <button id="again" class="big">Tekrar Oyna</button>
+    <button id="share" class="ghost">Skoru Paylaş</button>
+  </div>
+
+  <div id="toast" class="hidden"></div>
+  <div id="rotate" class="overlay">Telefonu dik tut 📱</div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ---------- ayarlar ----------
+  const W = 360;                 // mantıksal genişlik; yükseklik ekrana göre
+  const S = 0.14;                // karakter çizim ölçeği (SVG birimi → oyun birimi)
+  const ANKLE_Y = 770;           // SVG'de dinlenme pozunda bilek yüksekliği
+  const FOOT = (ANKLE_Y + 36 - 440) * S;   // gövde merkezinden ayak tabanına
+  const P = { g: 1500, jump: -780, spring: -1250, speed: 290, accel: 10, maxFall: 1100 };
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const $ = (id) => document.getElementById(id);
+  const ui = {
+    score: $('score'), mute: $('mute'), pauseBtn: $('pauseBtn'), menu: $('menu'), menuBest: $('menuBest'), start: $('start'),
+    pause: $('pause'), resume: $('resume'),
+    over: $('over'), overTitle: $('overTitle'), overScore: $('overScore'), overBest: $('overBest'),
+    newRec: $('newRec'), again: $('again'), share: $('share'), toast: $('toast'),
+  };
+
+  // ---------- yardımcılar ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) { /* gizli sekme */ } },
+  };
+  const fmt = (n) => n.toLocaleString('tr-TR');
+  const seedParam = Number(new URLSearchParams(location.search).get('seed'));
+  let seed = Number.isFinite(seedParam) && seedParam > 0 ? seedParam : (Math.random() * 2 ** 31) | 0;
+  function rng() { // mulberry32: ?seed=N ile tekrarlanabilir dünya
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  }
+
+  window.mzEvents = [];
+  function track(name, data = {}) {
+    window.mzEvents.push({ name, t: Date.now(), ...data });
+    if (typeof window.gtag === 'function') window.gtag('event', name, data);
+  }
+
+  // ---------- ses ----------
+  let actx = null;
+  let muted = store.get('mz-muted', '0') === '1';
+  function ensureAudio() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; } }
+    if (actx && actx.state === 'suspended') actx.resume();
+  }
+  function tone(f1, f2, dur, type = 'sine', vol = 0.12, delay = 0) {
+    if (muted || !actx) return;
+    const now = actx.currentTime + delay;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f1, now);
+    o.frequency.exponentialRampToValueAtTime(f2, now + dur);
+    g.gain.setValueAtTime(vol, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(now); o.stop(now + dur + 0.02);
+  }
+  const sfx = {
+    jump: () => tone(420, 780, 0.12, 'sine', 0.12),
+    spring: () => tone(300, 1300, 0.3, 'triangle', 0.15),
+    juice: () => { tone(880, 1200, 0.07, 'square', 0.05); tone(1320, 1760, 0.09, 'square', 0.05, 0.07); },
+    crack: () => tone(220, 70, 0.15, 'sawtooth', 0.08),
+    fall: () => tone(700, 90, 0.8, 'triangle', 0.15),
+    hit: () => tone(320, 60, 0.35, 'square', 0.12),
+  };
+  function setMute(m) { muted = m; store.set('mz-muted', m ? '1' : '0'); ui.mute.textContent = m ? '🔇' : '🔊'; }
+  setMute(muted);
+
+  // ---------- ekran ----------
+  let dpr = 1, scale = 1, H = 640;
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 3);
+    canvas.width = Math.round(r.width * dpr);
+    canvas.height = Math.round(r.height * dpr);
+    scale = r.width / W;
+    H = r.height / scale;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---------- oyun durumu ----------
+  let state = 'menu';            // menu | playing | paused | dying | over
+  let player, platforms, juices, birds, particles, texts;
+  let cameraY, startY, nextY, heightScore, bonus, dyingT, deathCause, t = 0, rounds = 0, lastScore = 0;
+  let best = parseInt(store.get('mz-best', '0'), 10) || 0;
+
+  const score = () => heightScore + bonus;
+  const difficulty = () => Math.min(1, heightScore / 2500);
+
+  function mkPlat(x, y, type, w = 64) {
+    return { x, y, w, type, vx: 0, broken: false, fallVy: 0, rot: 0, spring: null };
+  }
+
+  function generateUpTo(topY) {
+    while (nextY > topY) {
+      const d = difficulty();
+      const gap = Math.min(175, 62 + 85 * d + rng() * 28);
+      nextY -= gap;
+      let x = rng() * (W - 64);
+      // menüde karakter ortada zıplıyor: ilk yapraklar ortayı kapatmasın
+      if (nextY > -260 && Math.abs(x + 32 - W / 2) < 70) x = x + 32 < W / 2 ? W / 2 - 70 - 64 : W / 2 + 70;
+      x = Math.max(0, Math.min(W - 64, x));
+      const p = mkPlat(x, nextY, 'normal');
+      if (heightScore > 40 && rng() < 0.08 + 0.25 * d) {
+        p.type = 'move';
+        p.vx = (rng() < 0.5 ? -1 : 1) * (40 + 70 * d);
+      } else if (nextY < -300 && rng() < 0.07) {
+        p.spring = { ox: 8 + rng() * 34, comp: 0 };
+      }
+      platforms.push(p);
+
+      // ek kuru yaprak: basınca kırılır, ana yolun parçası değil
+      if (heightScore > 80 && rng() < 0.1 + 0.2 * d) {
+        const bx = rng() * (W - 64);
+        if (Math.abs(bx - x) > 80) platforms.push(mkPlat(bx, nextY + gap * 0.5, 'break'));
+      }
+      if (nextY < -200 && rng() < 0.22) {
+        juices.push({ x: Math.max(20, Math.min(W - 20, x + 32 + (rng() - 0.5) * 50)), y: nextY - 60 - rng() * 40, taken: false, ph: rng() * 6 });
+      }
+      if (heightScore > 150 && rng() < 0.05 + 0.12 * d && birds.every((b) => Math.abs(b.y - nextY) > 420)) {
+        birds.push({ x: 30 + rng() * (W - 60), y: nextY - gap * 0.5, vx: (rng() < 0.5 ? -1 : 1) * (70 + 90 * d), ph: rng() * 6 });
+      }
+    }
+  }
+
+  function reset() {
+    platforms = []; juices = []; birds = []; particles = []; texts = [];
+    // başlangıç dalı ekran boyu: ilk saniyelerde yere düşüp kaybetmek yok
+    platforms.push(mkPlat(-20, 0, 'branch', W + 40));
+    player = { x: W / 2, y: -FOOT, vx: 0, vy: 0, facing: 1, squash: 0 };
+    startY = player.y;
+    cameraY = -H * 0.72;
+    nextY = 0; heightScore = 0; bonus = 0; dyingT = 0; deathCause = null;
+    generateUpTo(cameraY - 300);
+    updateScoreUI(true);
+  }
+
+  // ---------- girdi ----------
+  // Dokunma: touch olayları + preventDefault (uzun basmada tarayıcı hareketi devreye girmesin).
+  // Fare: pointer olayları. Klavye: ←/→, A/D.
+  const presses = new Map();     // kimlik → clientX; ekleme sırası = basma sırası
+  function onTouch(e) {
+    if (state !== 'playing') return;
+    e.preventDefault();
+    for (const tc of e.changedTouches) {
+      const id = 't' + tc.identifier;
+      if (e.type === 'touchstart') { presses.delete(id); presses.set(id, tc.clientX); }
+      else if (e.type === 'touchmove') { if (presses.has(id)) presses.set(id, tc.clientX); }
+      else presses.delete(id);
+    }
+  }
+  ['touchstart', 'touchmove', 'touchend', 'touchcancel'].forEach((ev) => canvas.addEventListener(ev, onTouch, { passive: false }));
+  canvas.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse' || state !== 'playing') return;
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* yok */ }
+    presses.set('m', e.clientX);
+  });
+  canvas.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' && presses.has('m')) presses.set('m', e.clientX); });
+  const liftMouse = (e) => { if (e.pointerType === 'mouse') presses.delete('m'); };
+  canvas.addEventListener('pointerup', liftMouse);
+  canvas.addEventListener('pointercancel', liftMouse);
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  const keys = { left: false, right: false };
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+    if ((e.key === ' ' || e.key === 'Enter') && (state === 'menu' || state === 'over')) { e.preventDefault(); startGame(); }
+    if (e.key === 'Escape' || e.key === 'p' || e.key === 'P') { if (state === 'playing') pauseGame(); else if (state === 'paused') resumeGame(); }
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+  });
+  function inputDir() {
+    if (presses.size) {
+      const r = canvas.getBoundingClientRect();
+      let lastX = 0;
+      for (const x of presses.values()) lastX = x;   // en son basılan parmak kazanır
+      return lastX < r.left + r.width / 2 ? -1 : 1;
+    }
+    return (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+  }
+
+  // ---------- akış ----------
+  function startGame() {
+    ensureAudio();
+    presses.clear();
+    reset();
+    state = 'playing';
+    rounds += 1;
+    track('round_start', { round: rounds });
+    ui.menu.classList.add('hidden');
+    ui.over.classList.add('hidden');
+    ui.pause.classList.add('hidden');
+    ui.score.classList.remove('hidden');
+    ui.pauseBtn.classList.remove('hidden');
+  }
+
+  function pauseGame() {
+    if (state !== 'playing') return;
+    state = 'paused';
+    presses.clear();
+    ui.pause.classList.remove('hidden');
+    ui.pauseBtn.classList.add('hidden');
+  }
+  function resumeGame() {
+    if (state !== 'paused') return;
+    ensureAudio();
+    state = 'playing';
+    ui.pause.classList.add('hidden');
+    ui.pauseBtn.classList.remove('hidden');
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+
+  function die(cause) {
+    if (state !== 'playing') return;
+    state = 'dying'; dyingT = 0; deathCause = cause;
+    presses.clear();
+    ui.pauseBtn.classList.add('hidden');
+    if (cause === 'bird') { sfx.hit(); player.vy = -380; player.vx = 0; } else sfx.fall();
+  }
+
+  function gameOver() {
+    state = 'over';
+    lastScore = score();
+    const isRecord = lastScore > best;
+    if (isRecord) { best = lastScore; store.set('mz-best', best); }
+    track('round_end', { round: rounds, score: lastScore, cause: deathCause });
+    ui.overTitle.textContent = deathCause === 'bird' ? 'Kuşa çarptın!' : 'Hoppala, düştün!';
+    ui.overScore.textContent = fmt(lastScore);
+    ui.newRec.classList.toggle('hidden', !(isRecord && lastScore > 0));
+    ui.overBest.textContent = 'Rekor: ' + fmt(best) + ' m';
+    ui.score.classList.add('hidden');
+    ui.over.classList.remove('hidden');
+  }
+
+  let toastTimer = 0;
+  function toast(msg) {
+    ui.toast.textContent = msg;
+    ui.toast.classList.remove('hidden');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => ui.toast.classList.add('hidden'), 2600);
+  }
+
+  async function share() {
+    const text = `Mandalinam ${fmt(lastScore)} m tırmandı 🍊 Sen geçebilir misin?`;
+    const url = location.href.split('#')[0].split('?')[0];
+    track('share', { score: lastScore });
+    try {
+      if (navigator.share) { await navigator.share({ title: 'Mandalina Zıpla', text, url }); toast('Paylaşıldı!'); return; }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+    try { await navigator.clipboard.writeText(text + ' ' + url); toast('Skor panoya kopyalandı 📋'); }
+    catch (e) { toast(text); }
+  }
+
+  ui.start.addEventListener('click', startGame);
+  ui.again.addEventListener('click', startGame);
+  ui.share.addEventListener('click', share);
+  ui.pauseBtn.addEventListener('click', pauseGame);
+  ui.resume.addEventListener('click', resumeGame);
+  ui.mute.addEventListener('click', () => { ensureAudio(); setMute(!muted); });
+
+  let shownScore = -1;
+  function updateScoreUI(force) {
+    const s = score();
+    if (force || s !== shownScore) { shownScore = s; ui.score.textContent = fmt(s) + ' m'; }
+  }
+
+  // ---------- efektler ----------
+  function burst(x, y, color, n, spread = 160) {
+    for (let i = 0; i < n; i++) {
+      particles.push({ x, y, vx: (Math.random() - 0.5) * spread * 2, vy: -Math.random() * spread - 40, life: 0.5, max: 0.5, color, size: 2 + Math.random() * 3 });
+    }
+  }
+
+  // ---------- güncelleme ----------
+  function update(dt) {
+    if (state === 'paused') return;
+    t += dt;
+    const dir = state === 'playing' ? inputDir() : 0;
+
+    if (state !== 'dying' || deathCause !== 'bird') {
+      player.vx += (dir * P.speed - player.vx) * Math.min(1, dt * P.accel);
+    }
+    if (dir) player.facing = dir;
+    player.x += player.vx * dt;
+    if (player.x < -20) player.x += W + 40;
+    else if (player.x > W + 20) player.x -= W + 40;
+
+    const prevFeet = player.y + FOOT;
+    player.vy = Math.min(P.maxFall, player.vy + P.g * dt);
+    player.y += player.vy * dt;
+    const feet = player.y + FOOT;
+    player.squash = Math.max(0, player.squash - dt * 6);
+
+    if (state !== 'dying' && player.vy > 0) {
+      for (const p of platforms) {
+        if (p.broken) continue;
+        if (p.y > cameraY + H) continue;   // ekranın altında kalan yaprak/dal artık tutmaz
+        if (prevFeet <= p.y && feet >= p.y && player.x > p.x - 14 && player.x < p.x + p.w + 14) {
+          if (p.type === 'break') {
+            p.broken = true; sfx.crack(); burst(p.x + p.w / 2, p.y, '#b5793a', 8);
+            continue;
+          }
+          player.y = p.y - FOOT;
+          const onSpring = p.spring && Math.abs(player.x - (p.x + p.spring.ox + 8)) < 20;
+          player.vy = onSpring ? P.spring : P.jump;
+          if (onSpring) { p.spring.comp = 1; sfx.spring(); } else sfx.jump();
+          player.squash = 1;
+          burst(player.x, p.y, '#7cc34a', 6, 90);
+          break;
+        }
+      }
+    }
+
+    for (const p of platforms) {
+      if (p.type === 'move' && !p.broken) {
+        p.x += p.vx * dt;
+        if (p.x < 0) { p.x = 0; p.vx = Math.abs(p.vx); }
+        if (p.x > W - p.w) { p.x = W - p.w; p.vx = -Math.abs(p.vx); }
+      }
+      if (p.broken) { p.fallVy += P.g * dt; p.y += p.fallVy * dt; p.rot += dt * 3; }
+      if (p.spring) p.spring.comp = Math.max(0, p.spring.comp - dt * 5);
+    }
+
+    if (state === 'playing') {
+      for (const j of juices) {
+        if (!j.taken && Math.hypot(player.x - j.x, player.y - j.y) < 34) {
+          j.taken = true; bonus += 10; sfx.juice();
+          burst(j.x, j.y, '#ff9a1c', 10);
+          texts.push({ x: j.x, y: j.y - 10, text: '+10', life: 0.8 });
+        }
+      }
+    }
+
+    for (const b of birds) {
+      b.x += b.vx * dt; b.ph += dt * 12;
+      if (b.x < 24) { b.x = 24; b.vx = Math.abs(b.vx); }
+      if (b.x > W - 24) { b.x = W - 24; b.vx = -Math.abs(b.vx); }
+      if (state === 'playing' && Math.hypot(player.x - b.x, player.y - b.y) < 36) die('bird');
+    }
+
+    for (const q of particles) { q.vy += 900 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.life -= dt; }
+    particles = particles.filter((q) => q.life > 0);
+    for (const x of texts) { x.y -= 40 * dt; x.life -= dt; }
+    texts = texts.filter((x) => x.life > 0);
+
+    if (state === 'playing') {
+      const target = player.y - H * 0.42;
+      if (target < cameraY) cameraY = target;
+      heightScore = Math.max(heightScore, Math.floor((startY - player.y) / 10));
+      generateUpTo(cameraY - 200);
+      const bottom = cameraY + H + 120;
+      platforms = platforms.filter((p) => p.y < bottom);
+      juices = juices.filter((j) => j.y < bottom && !j.taken);
+      birds = birds.filter((b) => b.y < bottom);
+      updateScoreUI(false);
+      if (player.y - FOOT - cameraY > H) die('fall');
+    } else if (state === 'dying') {
+      dyingT += dt;
+      if (dyingT > 1.1) gameOver();
+    }
+  }
+
+  // ---------- çizim: gökyüzü ----------
+  const SKY = [
+    [0, [127, 211, 247], [233, 248, 255]],
+    [1500, [255, 154, 107], [255, 214, 160]],
+    [3000, [27, 37, 80], [90, 74, 138]],
+  ];
+  const mix = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
+  function skyAt(alt) {
+    for (let i = 0; i < SKY.length - 1; i++) {
+      const [a0, t0, b0] = SKY[i], [a1, t1, b1] = SKY[i + 1];
+      if (alt <= a1) { const k = Math.max(0, (alt - a0) / (a1 - a0)); return [mix(t0, t1, k), mix(b0, b1, k)]; }
+    }
+    return [SKY[2][1], SKY[2][2]];
+  }
+  const clouds = Array.from({ length: 6 }, (_, i) => ({ x: (i * 97) % W, y: i * 190, s: 0.7 + (i % 3) * 0.25 }));
+  const stars = Array.from({ length: 40 }, (_, i) => ({ x: (i * 73) % W, y: (i * 151) % 900, r: 0.6 + (i % 3) * 0.5 }));
+  function drawSky() {
+    const [top, bot] = skyAt(heightScore);
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, `rgb(${top})`); g.addColorStop(1, `rgb(${bot})`);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const night = Math.max(0, Math.min(1, (heightScore - 1800) / 1000));
+    if (night > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${0.8 * night})`;
+      for (const s of stars) {
+        const y = ((s.y - cameraY * 0.15) % 900 + 900) % 900;
+        if (y < H) { ctx.beginPath(); ctx.arc(s.x, y, s.r, 0, Math.PI * 2); ctx.fill(); }
+      }
+    }
+    ctx.fillStyle = `rgba(255,255,255,${0.75 - 0.5 * night})`;
+    const span = H + 240;
+    for (const c of clouds) {
+      const y = ((c.y - cameraY * 0.3) % span + span) % span - 120;
+      const x = c.x;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 34 * c.s, 14 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(x + 22 * c.s, y - 8 * c.s, 22 * c.s, 14 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(x - 20 * c.s, y - 4 * c.s, 18 * c.s, 11 * c.s, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ---------- çizim: dünya ----------
+  function drawBranch(p) {
+    const y = p.y;
+    ctx.fillStyle = '#7a4a22';
+    ctx.beginPath();
+    ctx.moveTo(-10, y - 2); ctx.quadraticCurveTo(W / 2, y - 8, W + 10, y - 2);
+    ctx.lineTo(W + 10, y + 14); ctx.quadraticCurveTo(W / 2, y + 8, -10, y + 14); ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = '#4e2c10'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(20, y + 3); ctx.lineTo(W - 20, y + 2); ctx.stroke();
+    for (let i = 0; i < 7; i++) {
+      const lx = 18 + i * 54, up = i % 2 ? -1 : 1;
+      ctx.save(); ctx.translate(lx, y + (up > 0 ? 12 : -2)); ctx.rotate(up * 0.5);
+      ctx.beginPath(); ctx.ellipse(10, up * 6, 12, 6, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#5bb33a'; ctx.fill(); ctx.strokeStyle = '#2f6b1f'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawLeaf(p) {
+    if (p.type === 'branch') { drawBranch(p); return; }
+    const { x, y, w } = p;
+    ctx.save();
+    if (p.broken) { ctx.translate(x + w / 2, y); ctx.rotate(p.rot); ctx.translate(-(x + w / 2), -y); ctx.globalAlpha = 0.8; }
+    const colors = p.type === 'break' ? ['#c99459', '#8a5a2b', '#6b4219']
+      : p.type === 'move' ? ['#b6e05a', '#6fae2a', '#3f7a1a'] : ['#7fcf4f', '#3f8f2a', '#2f6b1f'];
+    const g = ctx.createLinearGradient(x, y - 8, x, y + 14);
+    g.addColorStop(0, colors[0]); g.addColorStop(1, colors[1]);
+    ctx.beginPath();
+    ctx.moveTo(x, y + 5);
+    ctx.quadraticCurveTo(x + w / 2, y - 9, x + w, y + 5);
+    ctx.quadraticCurveTo(x + w / 2, y + 19, x, y + 5);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = colors[2]; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + 4, y + 5); ctx.lineTo(x + w - 6, y + 5);
+    ctx.lineWidth = 1.5; ctx.stroke();
+    if (p.type === 'break') {
+      ctx.beginPath(); ctx.moveTo(x + w * 0.45, y - 1); ctx.lineTo(x + w * 0.52, y + 5); ctx.lineTo(x + w * 0.46, y + 11);
+      ctx.strokeStyle = '#4a2a10'; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    if (p.type === 'move') {
+      ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x - 10, y + 2); ctx.lineTo(x - 4, y + 2); ctx.moveTo(x + w + 4, y + 2); ctx.lineTo(x + w + 10, y + 2); ctx.stroke();
+    }
+    if (p.spring) {
+      const sx = p.x + p.spring.ox, h = 14 * (1 - 0.5 * p.spring.comp);
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath();
+      for (let i = 0; i <= 4; i++) { const yy = y - (i / 4) * h; ctx.lineTo(sx + (i % 2 ? 16 : 0), yy); }
+      ctx.stroke();
+      ctx.fillStyle = '#e2484d'; ctx.fillRect(sx - 2, y - h - 4, 20, 5);
+    }
+    ctx.restore();
+  }
+
+  function drawJuice(j) {
+    const y = j.y + Math.sin(t * 3 + j.ph) * 3;
+    ctx.save(); ctx.translate(j.x, y);
+    ctx.beginPath();
+    ctx.moveTo(0, -12);
+    ctx.bezierCurveTo(6, -4, 10, 0, 10, 5);
+    ctx.arc(0, 5, 10, 0, Math.PI);
+    ctx.bezierCurveTo(-10, 0, -6, -4, 0, -12);
+    const g = ctx.createLinearGradient(0, -12, 0, 15);
+    g.addColorStop(0, '#ffc25a'); g.addColorStop(1, '#ff7a00');
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = '#b35400'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.75)';
+    ctx.beginPath(); ctx.ellipse(-3.5, 3, 2.2, 4, -0.3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawBird(b) {
+    ctx.save(); ctx.translate(b.x, b.y);
+    ctx.scale(b.vx < 0 ? -1 : 1, 1);
+    const flap = Math.sin(b.ph) * 10;
+    ctx.fillStyle = '#4f6fa8';
+    ctx.beginPath(); ctx.moveTo(-4, -2); ctx.lineTo(-16, -10 - flap); ctx.lineTo(6, -4); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(0, 0, 17, 12, 0, 0, Math.PI * 2); ctx.fillStyle = '#5d7fb8'; ctx.fill();
+    ctx.strokeStyle = '#2c3f66'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(2, 5, 10, 6, 0, 0, Math.PI * 2); ctx.fillStyle = '#c9dbf5'; ctx.fill();
+    ctx.beginPath(); ctx.moveTo(15, -2); ctx.lineTo(25, 1); ctx.lineTo(15, 4); ctx.closePath(); ctx.fillStyle = '#ffa31a'; ctx.fill();
+    ctx.beginPath(); ctx.arc(8, -4, 3.5, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.beginPath(); ctx.arc(9, -4, 1.8, 0, Math.PI * 2); ctx.fillStyle = '#111'; ctx.fill();
+    ctx.restore();
+  }
+
+  // ---------- çizim: mandalina (mandalina.svg'den) ----------
+  const path = (d) => new Path2D(d);
+  const PATHS = {
+    body: path('M400 268 C 270 262, 208 340, 210 440 C 212 545, 300 612, 400 612 C 500 612, 588 545, 590 440 C 592 340, 530 262, 400 268 Z'),
+    leafR: path('M404 238 C 430 196, 492 190, 520 208 C 494 246, 444 258, 404 238 Z'),
+    leafL: path('M398 240 C 378 206, 330 204, 310 220 C 330 250, 370 256, 398 240 Z'),
+    crown: path('M392 274 L 400 262 L 408 274 Z'),
+    stem: path('M400 266 Q 398 246 404 232'),
+    mouth: path('M330 468 Q 404 572 486 464 Q 406 494 330 468 Z'),
+    teeth: path('M346 474 Q 406 492 470 472 L 466 484 Q 406 500 350 484 Z'),
+    tongue: path('M400 512 C 396 540, 410 560, 428 556 C 448 552, 448 524, 440 506 Q 420 516 400 512 Z'),
+    shoe: path('M0 -6 C -12 -12, -52 -10, -74 10 C -86 22, -80 36, -60 36 L 4 36 C 16 36, 18 22, 12 8 Z'),
+  };
+  const PORES = [[262, 380], [290, 520], [250, 460], [540, 370], [555, 470], [520, 540], [330, 575], [470, 580], [560, 420], [440, 300], [350, 300], [240, 410]];
+
+  function strokeP(p, color, w) { ctx.strokeStyle = color; ctx.lineWidth = w; ctx.stroke(p); }
+  function line(x1, y1, x2, y2, color, w) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.strokeStyle = color; ctx.lineWidth = w; ctx.stroke(); }
+  function ell(x, y, rx, ry, fill, stroke, w) {
+    ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = w; ctx.stroke(); }
+  }
+
+  function poseOf() {
+    if (state === 'dying') return deathCause === 'bird' ? 'dizzy' : 'scared';
+    if (player.vy < -200) return 'up';
+    if (player.vy > 650) return 'scared';
+    if (player.vy > 150) return 'fall';
+    return 'mid';
+  }
+
+  function drawMandarin() {
+    const pose = poseOf();
+    const sq = player.squash;
+    ctx.save();
+    ctx.translate(player.x, player.y);
+    if (pose === 'dizzy') ctx.rotate(Math.sin(t * 14) * 0.25 + dyingT * 4);
+    ctx.scale(player.facing * (1 + 0.14 * sq) * S, (1 - 0.14 * sq) * S);
+    ctx.translate(-400, -440 + 60 * sq);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+    // bacaklar + ayakkabılar
+    const tuck = pose === 'up' ? 35 : 0;
+    const ankles = [[350, ANKLE_Y - tuck], [450, ANKLE_Y - tuck]];
+    if (pose === 'scared' || pose === 'dizzy') { ankles[0][0] = 320 + Math.sin(t * 20) * 15; ankles[1][0] = 480 - Math.sin(t * 20) * 15; }
+    [[365, 598, -1], [435, 598, 1]].forEach(([hx, hy, side], i) => {
+      const [ax, ay] = ankles[i];
+      ctx.beginPath(); ctx.moveTo(hx, hy);
+      ctx.quadraticCurveTo((hx + ax) / 2 + side * 10, (hy + ay) / 2, ax, ay);
+      ctx.strokeStyle = '#4a2a1a'; ctx.lineWidth = 14; ctx.stroke();
+      ctx.save(); ctx.translate(ax, ay); ctx.scale(side < 0 ? 1 : -1, 1);
+      const sg = ctx.createLinearGradient(0, -12, 0, 36); sg.addColorStop(0, '#ff5470'); sg.addColorStop(1, '#c8263f');
+      ctx.fillStyle = sg; ctx.fill(PATHS.shoe); strokeP(PATHS.shoe, '#6b1020', 5);
+      line(-78, 28, 12, 28, '#fff', 7);
+      ctx.restore();
+    });
+
+    // kollar (gövdenin arkasında)
+    let hands;
+    if (pose === 'up') hands = [[150, 300], [650, 300]];
+    else if (pose === 'mid') hands = [[132, 380], [668, 380]];
+    else if (pose === 'fall') hands = [[124, 430 + Math.sin(t * 22) * 45], [676, 430 + Math.sin(t * 22 + Math.PI) * 45]];
+    else hands = [[140, 250 + Math.sin(t * 30) * 40], [660, 250 + Math.cos(t * 30) * 40]];
+    const shoulders = [[226, 430], [574, 430]];
+    hands.forEach(([hx, hy], i) => {
+      const [sx, sy] = shoulders[i];
+      ctx.beginPath(); ctx.moveTo(sx, sy);
+      ctx.quadraticCurveTo(hx + (sx - hx) * 0.3, Math.min(sy, hy) + (hy < sy ? 90 : -10), hx, hy);
+      ctx.strokeStyle = '#4a2a1a'; ctx.lineWidth = 14; ctx.stroke();
+    });
+
+    // gövde
+    const bg = ctx.createRadialGradient(330, 350, 20, 380, 420, 260);
+    bg.addColorStop(0, '#ffc25a'); bg.addColorStop(0.55, '#ff8a1c'); bg.addColorStop(1, '#d95a00');
+    ctx.fillStyle = bg; ctx.fill(PATHS.body); strokeP(PATHS.body, '#a84300', 6);
+    ctx.fillStyle = 'rgba(200,84,0,.28)';
+    for (const [px, py] of PORES) { ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill(); }
+    ctx.save(); ctx.translate(300, 340); ctx.rotate(-0.7);
+    ell(0, 0, 34, 54, 'rgba(255,255,255,.38)'); ctx.restore();
+
+    // sap ve yapraklar
+    ctx.fillStyle = '#5b3a1e'; ctx.fill(PATHS.crown);
+    strokeP(PATHS.stem, '#5b3a1e', 9);
+    const lg = ctx.createLinearGradient(310, 190, 520, 260); lg.addColorStop(0, '#8fd14f'); lg.addColorStop(1, '#3f8f2a');
+    ctx.fillStyle = lg; ctx.fill(PATHS.leafR); ctx.fill(PATHS.leafL);
+    strokeP(PATHS.leafR, '#2f6b1f', 5); strokeP(PATHS.leafL, '#2f6b1f', 5);
+
+    // yüz
+    ell(300, 470, 26, 14, 'rgba(255,90,110,.5)'); ell(510, 470, 26, 14, 'rgba(255,90,110,.5)');
+    if (pose === 'dizzy') {
+      line(322, 380, 370, 420, '#3a1500', 8); line(370, 380, 322, 420, '#3a1500', 8);
+      line(432, 380, 480, 420, '#3a1500', 8); line(480, 380, 432, 420, '#3a1500', 8);
+      ctx.beginPath(); ctx.moveTo(350, 500); ctx.quadraticCurveTo(375, 480, 400, 500); ctx.quadraticCurveTo(425, 520, 450, 500);
+      ctx.strokeStyle = '#3a1500'; ctx.lineWidth = 7; ctx.stroke();
+    } else if (pose === 'scared') {
+      ctx.beginPath(); ctx.moveTo(318, 336); ctx.quadraticCurveTo(344, 312, 372, 330); ctx.moveTo(432, 330); ctx.quadraticCurveTo(460, 312, 486, 336);
+      ctx.strokeStyle = '#5a2400'; ctx.lineWidth = 7; ctx.stroke();
+      ell(348, 400, 30, 38, '#fff', '#3a1500', 5); ell(456, 400, 30, 38, '#fff', '#3a1500', 5);
+      ell(348, 404, 9, 9, '#2a1410'); ell(456, 404, 9, 9, '#2a1410');
+      ell(404, 505, 24, 30, '#5a0e14', '#3a1500', 5);
+    } else {
+      ctx.beginPath(); ctx.moveTo(318, 352); ctx.quadraticCurveTo(344, 334, 372, 346); ctx.moveTo(432, 340); ctx.quadraticCurveTo(460, 326, 486, 344);
+      ctx.strokeStyle = '#5a2400'; ctx.lineWidth = 7; ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(320, 408); ctx.quadraticCurveTo(346, 386, 374, 408);
+      ctx.strokeStyle = '#3a1500'; ctx.lineWidth = 8; ctx.stroke();
+      ell(456, 400, 32, 40, '#fff', '#3a1500', 5);
+      ell(462, 410, 17, 17, '#2a1410'); ell(469, 402, 6, 6, '#fff');
+      ctx.fillStyle = '#5a0e14'; ctx.fill(PATHS.mouth); strokeP(PATHS.mouth, '#3a1500', 5);
+      ctx.fillStyle = '#fff'; ctx.fill(PATHS.teeth);
+      ctx.fillStyle = '#ff6f86'; ctx.fill(PATHS.tongue); strokeP(PATHS.tongue, '#3a1500', 4);
+    }
+
+    // eldivenler
+    hands.forEach(([hx, hy], i) => {
+      const side = i === 0 ? -1 : 1;
+      ell(hx, hy, 30, 28, '#fff', '#3a3a3a', 5);
+      ell(hx - side * 26, hy + 8, 10, 15, '#fff', '#3a3a3a', 5);
+      line(hx - 10, hy - 6, hx + 10, hy - 6, '#bbb', 3);
+    });
+    ctx.restore();
+  }
+
+  function render() {
+    ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+    drawSky();
+    ctx.save();
+    ctx.translate(0, -cameraY);
+    for (const p of platforms) drawLeaf(p);
+    for (const j of juices) if (!j.taken) drawJuice(j);
+    for (const b of birds) drawBird(b);
+    drawMandarin();
+    for (const q of particles) { ctx.globalAlpha = Math.max(0, q.life / q.max); ctx.fillStyle = q.color; ctx.fillRect(q.x, q.y, q.size, q.size); }
+    ctx.globalAlpha = 1;
+    ctx.font = '800 18px sans-serif'; ctx.textAlign = 'center';
+    for (const x of texts) {
+      ctx.globalAlpha = Math.min(1, x.life * 2);
+      ctx.lineWidth = 4; ctx.strokeStyle = '#7a3500'; ctx.strokeText(x.text, x.x, x.y);
+      ctx.fillStyle = '#ffe066'; ctx.fillText(x.text, x.x, x.y);
+    }
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  // ---------- döngü ----------
+  let last = performance.now();
+  function frame(now) {
+    let dt = (now - last) / 1000;
+    last = now;
+    if (dt > 0.05) dt = 0.05;               // sekme dönüşünde ışınlanma olmasın
+    const steps = Math.max(1, Math.ceil(dt / (1 / 120)));
+    for (let i = 0; i < steps; i++) update(dt / steps);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  function showMenu() {
+    ui.menuBest.textContent = best > 0 ? 'Rekor: ' + fmt(best) + ' m' : '';
+  }
+
+  // test ve ölçüm için salt-okunur durum
+  window.mandalinaSnapshot = () => {
+    const r = canvas.getBoundingClientRect();
+    return {
+      state, score: score(), height: heightScore, bonus, best, cause: deathCause, W, H, scale,
+      canvas: { left: r.left, top: r.top, width: r.width, height: r.height },
+      cameraY, foot: FOOT,
+      player: { x: player.x, y: player.y, vx: player.vx, vy: player.vy },
+      platforms: platforms.filter((p) => !p.broken).map((p) => ({ x: p.x, y: p.y, w: p.w, type: p.type })),
+      birds: birds.map((b) => ({ x: b.x, y: b.y })),
+      events: window.mzEvents.map((e) => e.name),
+    };
+  };
+
+  reset();
+  showMenu();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
